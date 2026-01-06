@@ -18,6 +18,8 @@ app.get('/api/auth/callback', handleCallback);
 app.get('/api/products/search', ensureValidToken, searchProducts);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 API Nutriglar Afiliados lista en puerto ${PORT}`);
+
+// IMPORTANTE: Agregar '0.0.0.0' para que Railway pueda dirigir el tráfico
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor Nutriglar activo en puerto ${PORT}`);
 });
