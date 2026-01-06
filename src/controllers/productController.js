@@ -2,19 +2,22 @@ import axios from 'axios';
 
 export const searchProducts = async (req, res) => {
     const { q } = req.query;
-    const affiliateId = process.env.MELI_AFFILIATE_ID || '';
+    
+    // Log de seguridad para ver en Railway si las variables están cargando
+    console.log(`🔍 Buscando: "${q}" | ClientID activo: ${!!process.env.MELI_CLIENT_ID}`);
+    
+    const affiliateId = process.env.MELI_AFFILIATE_ID || 'nutriglar_default';
 
     try {
-        console.log(`🚀 Buscando en MeLi: "${q}"`);
-
+        // Intento de petición real con headers de navegador
         const response = await axios.get(`https://api.mercadolibre.com/sites/MLC/search`, {
             params: { q, limit: 12 },
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'application/json',
-                'Referer': 'https://www.mercadolibre.cl/',
+                'Referer': 'https://www.mercadolibre.cl/'
             },
-            timeout: 8000 
+            timeout: 7000 // Tiempo límite razonable
         });
 
         const products = response.data.results.map(item => ({
@@ -25,14 +28,14 @@ export const searchProducts = async (req, res) => {
             permalink: `${item.permalink}#affiliate_id=${affiliateId}`
         }));
 
-        console.log('✅ Datos reales obtenidos correctamente.');
-        res.json(products);
+        console.log('✅ Éxito: Datos reales obtenidos.');
+        return res.json(products);
 
     } catch (error) {
-        // Log para saber qué pasó exactamente
         const status = error.response?.status;
-        console.error(`⚠️ Error MeLi (${status || 'Timeout'}): Usando Mocks de respaldo.`);
+        console.error(`⚠️ Error MeLi (${status || 'Timeout'}): Enviando Mocks.`);
 
+        // Mocks equilibrados (con tus datos originales)
         const mockProducts = [
             {
                 id: "mock-1",
@@ -57,6 +60,6 @@ export const searchProducts = async (req, res) => {
             }
         ];
         
-        res.json(mockProducts);
+        return res.json(mockProducts);
     }
 };

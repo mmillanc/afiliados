@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+//import dotenv from 'dotenv';
 import { handleCallback } from './controllers/authController.js';
 import { searchProducts } from './controllers/productController.js';
 import { ensureValidToken } from './middleware/authMiddleware.js';
