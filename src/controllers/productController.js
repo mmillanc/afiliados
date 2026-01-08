@@ -2,38 +2,47 @@ import axios from 'axios';
 
 export const searchProducts = async (req, res) => {
     const { q } = req.query;
-    
-    // Log de seguridad para ver en Railway si las variables están cargando
-    console.log(`🔍 Buscando: "${q}" | ClientID activo: ${!!process.env.MELI_CLIENT_ID}`);
-    
-    const affiliateId = process.env.MELI_AFFILIATE_ID || 'nutriglar_default';
+    const affiliateId = process.env.MELI_AFFILIATE_ID || 'nutriglar';
 
     try {
-        // Intento de petición real con headers de navegador
+        console.log(`📡 Intentando consulta REAL a MeLi para: "${q}"`);
+
+        // Intentamos la búsqueda en el sitio de Chile (MLC)
+        // Usamos una URL de API directa que a veces tiene menos restricciones
         const response = await axios.get(`https://api.mercadolibre.com/sites/MLC/search`, {
-            params: { q, limit: 12 },
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'application/json',
-                'Referer': 'https://www.mercadolibre.cl/'
+            params: { 
+                q: q, 
+                limit: 12,
+                sort: 'relevance' // Pedimos por relevancia para parecer una búsqueda humana
             },
-            timeout: 7000 // Tiempo límite razonable
+            headers: {
+                // Simulamos un navegador muy específico
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json',
+                'Accept-Language': 'es-CL,es;q=0.9',
+                'Connection': 'keep-alive'
+            },
+            timeout: 8000
         });
 
-        const products = response.data.results.map(item => ({
-            id: item.id,
-            title: item.title,
-            price: item.price,
-            thumbnail: item.thumbnail.replace("-I.jpg", "-W.jpg"),
-            permalink: `${item.permalink}#affiliate_id=${affiliateId}`
-        }));
+        // Si llegamos aquí y hay resultados, MeLi NO nos bloqueó
+        if (response.data.results && response.data.results.length > 0) {
+            const products = response.data.results.map(item => ({
+                id: item.id,
+                title: item.title,
+                price: item.price,
+                thumbnail: item.thumbnail.replace("-I.jpg", "-W.jpg"),
+                permalink: `${item.permalink}#affiliate_id=${affiliateId}`
+            }));
 
-        console.log('✅ Éxito: Datos reales obtenidos.');
-        return res.json(products);
+            console.log(`✅ ¡ÉXITO! Se obtuvieron ${products.length} productos reales.`);
+            return res.json(products);
+        } else {
+            throw new Error('No se encontraron resultados reales');
+        }
 
     } catch (error) {
-        const status = error.response?.status;
-        console.error(`⚠️ Error MeLi (${status || 'Timeout'}): Enviando Mocks.`);
+        console.error(`❌ Falló la búsqueda real (Status: ${error.response?.status}). Activando Mocks.`);
 
         // Mocks equilibrados (con tus datos originales)
         const mockProducts = [

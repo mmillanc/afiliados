@@ -47,7 +47,7 @@ export default function SearchProductsPage() {
     setLoading(true);
     try {
       // Llamada a tu backend de Node.js
-      const response = await fetch(`http://localhost:3000/api/products/search?q=${query}`);
+      const response = await fetch(`https://afiliados-production-0d15.up.railway.app/api/products/search?q=${query}`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {
