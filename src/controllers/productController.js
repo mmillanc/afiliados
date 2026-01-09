@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const searchProducts = async (req, res) => {
     const { q } = req.query;
-    const ZENROWS_API_KEY = b3d3a8d88bb7b9743ced55b77c8d941be8f6949d; // Ponla en tus variables de Railway
+    const ZENROWS_API_KEY ='b3d3a8d88bb7b9743ced55b77c8d941be8f6949d'; // Ponla en tus variables de Railway
 
     try {
         console.log(`🚀 Usando túnel inteligente para buscar: "${q}"`);
