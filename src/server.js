@@ -4,12 +4,14 @@ import cors from 'cors';
 import { handleCallback } from './controllers/authController.js';
 import { searchProducts } from './controllers/productController.js';
 import { ensureValidToken } from './middleware/authMiddleware.js';
+import productRoutes from './routes/productRoutes.js';
 
 //dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api/products', productRoutes);
 
 // Rutas de Autenticación
 app.get('/api/auth/callback', handleCallback);
