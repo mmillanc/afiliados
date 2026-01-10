@@ -39,5 +39,15 @@ export const handleCallback = async (req, res) => {
             error: 'Fallo al obtener tokens',
             details: error.response?.data
         });
-    }
+        }
+        try {
+        const accessToken = response.data.access_token;
+        console.log('📡 Validando identidad para activar APP...');
+        await axios.get('https://api.mercadolibre.com/users/me', {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        console.log('✅ App activada en el ecosistema de MeLi');
+        } catch (vError) {
+        console.error('⚠️ No se pudo activar la app automáticamente:', vError.message);
+}
 };
