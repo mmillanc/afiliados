@@ -5,37 +5,34 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const handleCallback = async (req, res) => {
-    const { code } = req.query; // Este es el famoso TG (Authorization Code)
+    const { code } = req.query;
 
     if (!code) {
-        return res.status(400).send('Error: No se recibió el código de autorización.');
+        return res.status(400).send('Error: No se recibió el código.');
     }
 
     try {
         console.log('🔄 Intercambiando código por tokens...');
-        
-        const response = await axios.post('https://api.mercadolibre.com/oauth/token', {
-            grant_type: 'authorization_code',
-            client_id: process.env.MELI_CLIENT_ID,
-            client_secret: process.env.MELI_CLIENT_SECRET,
-            code: code,
-            redirect_uri: process.env.MELI_REDIRECT_URI
-            }, {
-        headers: {
-        'Content-Type': 'application/x-www-form-urlencoded' // MeLi a veces prefiere este formato
-        }
+
+        // Usamos URLSearchParams para asegurar el formato correcto
+        const params = new URLSearchParams();
+        params.append('grant_type', 'authorization_code');
+        params.append('client_id', process.env.MELI_CLIENT_ID);
+        params.append('client_secret', process.env.MELI_CLIENT_SECRET);
+        params.append('code', code);
+        params.append('redirect_uri', process.env.MELI_REDIRECT_URI); // <--- ESTE ES EL QUE RECLAMA
+
+        const response = await axios.post('https://api.mercadolibre.com/oauth/token', params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            }
         });
 
-        // Guardamos los tokens en el JSON
         await saveTokens(response.data);
+        console.log('✅ Tokens guardados correctamente');
 
-        res.send(`
-            <div style="font-family: sans-serif; text-align: center; padding: 50px;">
-                <h1 style="color: #00a650;">✅ ¡Autenticación Exitosa!</h1>
-                <p>Los tokens se han guardado en <b>tokens.json</b>.</p>
-                <p>Ya puedes cerrar esta pestaña y empezar a buscar productos.</p>
-            </div>
-        `);
+        res.send('<h1>✅ Autenticación Exitosa</h1>');
     } catch (error) {
         console.error('❌ Error en el intercambio:', error.response?.data || error.message);
         res.status(500).json({
